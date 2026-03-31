@@ -8,12 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, Sparkles, ChevronLeft, ChevronRight, Check, Search, Hash, X } from 'lucide-react';
+import { Plus, Trash2, Sparkles, ChevronLeft, ChevronRight, Check, Search, X, Download, Cloud } from 'lucide-react';
 import { generateAIBulletPoints } from '@/ai/flows/ai-bullet-point-generator-flow';
 import { useToast } from '@/hooks/use-toast';
 import { SKILL_CATEGORIES } from '@/lib/skills-data';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface BuilderFormProps {
@@ -265,7 +264,6 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
               </Button>
             </div>
 
-            {/* Suggested Skills Section */}
             <Card className="bg-slate-50 border-none shadow-none">
               <CardContent className="p-4 space-y-4">
                 <div className="relative">
@@ -306,7 +304,6 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
                           </Badge>
                         );
                       })}
-                      {filteredSkillSuggestions.length === 0 && <p className="text-xs text-slate-400">No matching skills found.</p>}
                     </div>
                   </div>
                 ) : (
@@ -349,12 +346,11 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
 
             <Separator />
 
-            {/* Selected Skills List */}
             <div className="space-y-4">
               <Label className="text-xs font-bold uppercase tracking-widest text-slate-400">Your Selected Skills</Label>
               <div className="grid gap-3">
                 {data.skills.map((skill) => (
-                  <div key={skill.id} className="flex gap-2 items-center animate-in fade-in zoom-in-95 duration-200">
+                  <div key={skill.id} className="flex gap-2 items-center">
                     <Input 
                       value={skill.name} 
                       onChange={(e) => onChange({ ...data, skills: data.skills.map(s => s.id === skill.id ? { ...s, name: e.target.value } : s) })} 
@@ -366,11 +362,6 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
                     </Button>
                   </div>
                 ))}
-                {data.skills.length === 0 && (
-                  <div className="text-center py-8 border-2 border-dashed rounded-xl text-slate-400 text-sm">
-                    No skills selected. Click suggestions above or add custom ones.
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -404,7 +395,50 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
                 ))}
               </div>
           </div>
-        )
+        );
+      case 5:
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="text-center space-y-4">
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
+                  <Check className="h-10 w-10" />
+                </div>
+                <h2 className="text-3xl font-black text-slate-900">Your resume is ready!</h2>
+                <p className="text-slate-500 max-w-sm mx-auto">Review your details on the right and hit export when you're set.</p>
+              </div>
+
+              <div className="grid gap-4">
+                <Card className="border-primary/20 bg-primary/5">
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <Cloud className="h-8 w-8 text-primary" />
+                    <div className="flex-grow">
+                      <h4 className="font-bold text-slate-900">Cloud Backup Enabled</h4>
+                      <p className="text-xs text-slate-500">Your progress is automatically saved to your anonymous profile.</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="p-6 border rounded-2xl space-y-4">
+                  <h4 className="font-bold uppercase tracking-widest text-[10px] text-slate-400">Final Checklist</h4>
+                  <ul className="space-y-3">
+                    <li className="flex items-center gap-2 text-sm text-slate-600">
+                      <Check className="h-4 w-4 text-emerald-500" /> Contact info is accurate
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-slate-600">
+                      <Check className="h-4 w-4 text-emerald-500" /> Experience is impact-focused
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-slate-600">
+                      <Check className="h-4 w-4 text-emerald-500" /> Template fits your industry
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <Button onClick={onNext} className="w-full h-16 text-lg font-bold gap-3 rounded-2xl shadow-xl shadow-primary/20">
+                <Download className="h-6 w-6" /> Export as PDF
+              </Button>
+          </div>
+        );
       default:
         return null;
     }
@@ -425,12 +459,12 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
           <ChevronLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         <div className="flex items-center gap-1">
-          {[0, 1, 2, 3, 4].map((s) => (
-            <div key={s} className={`h-1.5 w-6 rounded-full ${s === step ? 'bg-primary' : 'bg-slate-200'}`} />
+          {[0, 1, 2, 3, 4, 5].map((s) => (
+            <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s === step ? 'bg-primary w-10' : 'bg-slate-200'}`} />
           ))}
         </div>
         <Button onClick={onNext}>
-          {step === 4 ? 'Finish & Download' : 'Continue'} <ChevronRight className="ml-2 h-4 w-4" />
+          {step === 5 ? 'Download PDF' : 'Continue'} <ChevronRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
     </div>

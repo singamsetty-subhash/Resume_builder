@@ -5,8 +5,13 @@ import { BuilderForm } from '@/components/resume/BuilderForm';
 import { ResumePreview } from '@/components/resume/ResumePreview';
 import { ResumeData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, ArrowLeft, Monitor, Smartphone, Layout } from 'lucide-react';
+import { Download, FileText, ArrowLeft, Monitor, Smartphone, Layout, Cloud, Check } from 'lucide-react';
 import Link from 'next/link';
+import { useFirestore, useUser, useAuth, useMemoFirebase } from '@/firebase';
+import { doc, collection, setDoc, serverTimestamp } from 'firebase/firestore';
+import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { useToast } from '@/hooks/use-toast';
 
 const INITIAL_DATA: ResumeData = {
   contact: {
@@ -55,10 +60,64 @@ export default function BuilderPage() {
   const [step, setStep] = useState(0);
   const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
-  // Auto-save logic can be added here
-  
+  const { firestore } = useFirestore() ? { firestore: useFirestore() } : { firestore: null };
+  const auth = useAuth();
+  const { user } = useUser();
+  const { toast } = useToast();
+
+  // Ensure user is signed in
+  useEffect(() => {
+    if (!user && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [user, auth]);
+
+  const handleSave = () => {
+    if (!user || !firestore) {
+      toast({
+        title: "Sign-in required",
+        description: "Please wait while we set up your account...",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    
+    // Using a fixed ID for the current "main" resume for simplicity in MVP
+    const resumeId = "current-resume";
+    const resumeRef = doc(firestore, 'users', user.uid, 'resumes', resumeId);
+
+    const resumePayload = {
+      ...data,
+      userProfileId: user.uid,
+      title: data.contact.fullName ? `${data.contact.fullName}'s Resume` : 'Untitled Resume',
+      updatedAt: serverTimestamp(),
+      createdAt: lastSaved ? undefined : serverTimestamp(), // Only set on first save
+    };
+
+    setDoc(resumeRef, resumePayload, { merge: true })
+      .then(() => {
+        setLastSaved(new Date());
+        setIsSaving(false);
+      })
+      .catch((err) => {
+        console.error("Save error:", err);
+        setIsSaving(false);
+        toast({
+          title: "Save Failed",
+          description: "We couldn't save your progress. Please check your connection.",
+          variant: "destructive",
+        });
+      });
+  };
+
   const handlePrint = () => {
+    // Save before printing to ensure cloud is up to date
+    handleSave();
     setIsPrinting(true);
     setTimeout(() => {
       window.print();
@@ -72,6 +131,7 @@ export default function BuilderPage() {
     { name: 'Education', icon: Layout },
     { name: 'Skills', icon: Layout },
     { name: 'Template', icon: Layout },
+    { name: 'Review', icon: Check },
   ];
 
   return (
@@ -90,6 +150,18 @@ export default function BuilderPage() {
         </div>
         
         <div className="flex items-center gap-2">
+          <div className="hidden lg:flex items-center mr-4 text-xs text-slate-400 gap-2">
+            {isSaving ? (
+              <span className="flex items-center gap-1 animate-pulse">
+                <Cloud className="h-3 w-3" /> Saving...
+              </span>
+            ) : lastSaved ? (
+              <span className="flex items-center gap-1 text-emerald-500">
+                <Check className="h-3 w-3" /> Saved to cloud
+              </span>
+            ) : null}
+          </div>
+
           <div className="hidden md:flex bg-slate-100 rounded-lg p-1 mr-4">
             <Button 
               variant={viewMode === 'desktop' ? 'secondary' : 'ghost'} 
@@ -108,7 +180,7 @@ export default function BuilderPage() {
               <Smartphone className="h-4 w-4 mr-2" /> Mobile
             </Button>
           </div>
-          <Button onClick={handlePrint} className="gap-2">
+          <Button onClick={handlePrint} className="gap-2 shadow-lg shadow-primary/20">
             <Download className="h-4 w-4" /> Export PDF
           </Button>
         </div>
@@ -126,7 +198,7 @@ export default function BuilderPage() {
                     className={`flex flex-col items-center gap-1 group transition-all shrink-0`}
                   >
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${idx === step ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'border-slate-200 text-slate-400 group-hover:border-slate-300'}`}>
-                      {idx < step ? <FileText className="h-5 w-5" /> : <span className="text-sm font-bold">{idx + 1}</span>}
+                      {idx < step ? <Check className="h-5 w-5" /> : <span className="text-sm font-bold">{idx + 1}</span>}
                     </div>
                     <span className={`text-[10px] font-bold uppercase tracking-widest ${idx === step ? 'text-primary' : 'text-slate-400'}`}>{s.name}</span>
                   </button>
@@ -137,7 +209,7 @@ export default function BuilderPage() {
                 data={data} 
                 onChange={setData} 
                 step={step} 
-                onNext={() => step < 4 ? setStep(step + 1) : handlePrint()}
+                onNext={() => step < 5 ? setStep(step + 1) : handlePrint()}
                 onPrev={() => setStep(Math.max(0, step - 1))}
               />
              </div>
