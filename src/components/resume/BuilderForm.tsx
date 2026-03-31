@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from 'react';
@@ -291,7 +290,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
 
                 {skillSearch ? (
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-bold uppercase text-slate-400">Search Results</Key>
+                    <Label className="text-[10px] font-bold uppercase text-slate-400">Search Results</Label>
                     <div className="flex flex-wrap gap-2">
                       {filteredSkillSuggestions.map(skill => {
                         const isSelected = data.skills.some(s => s.name.toLowerCase() === skill.toLowerCase());
