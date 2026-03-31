@@ -1,0 +1,529 @@
+{
+  "entities": {
+    "UserResumeProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserResumeProfile",
+      "type": "object",
+      "description": "Represents a user's overall profile within the CVForge application, linking to their created resumes. This entity holds metadata about the user's resume activity.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserResumeProfile entity."
+        },
+        "currentResumeId": {
+          "type": "string",
+          "description": "Reference to the currently active or last-edited Resume for this user. (Relationship: UserResumeProfile 1:N Resume)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the user profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Resume": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Resume",
+      "type": "object",
+      "description": "Represents a single resume document created by a user, encapsulating all its content and chosen template.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Resume entity."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to the UserResumeProfile who owns this resume. (Relationship: UserResumeProfile 1:N Resume)"
+        },
+        "title": {
+          "type": "string",
+          "description": "A user-defined title for the resume (e.g., 'Software Engineer - Google')."
+        },
+        "templateId": {
+          "type": "string",
+          "description": "Reference to the Template chosen for this resume's design. (Relationship: Template 1:N Resume)"
+        },
+        "objectiveSummary": {
+          "type": "string",
+          "description": "A brief introductory statement or career objective for the resume."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the resume was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the resume was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "title",
+        "templateId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ContactInformation": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContactInformation",
+      "type": "object",
+      "description": "Stores the personal contact details to be displayed on a resume.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ContactInformation entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this contact information belongs to. (Relationship: Resume 1:1 ContactInformation)"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the individual."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the individual."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address for contact.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "The primary phone number for contact."
+        },
+        "city": {
+          "type": "string",
+          "description": "The city of residence."
+        },
+        "stateProvince": {
+          "type": "string",
+          "description": "The state or province of residence."
+        },
+        "country": {
+          "type": "string",
+          "description": "The country of residence."
+        },
+        "linkedinUrl": {
+          "type": "string",
+          "description": "URL to the individual's LinkedIn profile.",
+          "format": "uri"
+        },
+        "portfolioUrl": {
+          "type": "string",
+          "description": "URL to the individual's professional portfolio or personal website.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "firstName",
+        "lastName",
+        "email",
+        "city",
+        "country"
+      ]
+    },
+    "WorkExperience": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WorkExperience",
+      "type": "object",
+      "description": "Details about a single work experience entry on a resume, including job title, company, and responsibilities.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the WorkExperience entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this work experience belongs to. (Relationship: Resume 1:N WorkExperience)"
+        },
+        "jobTitle": {
+          "type": "string",
+          "description": "The title of the position held."
+        },
+        "companyName": {
+          "type": "string",
+          "description": "The name of the company or organization."
+        },
+        "location": {
+          "type": "string",
+          "description": "The city and state/country where the job was located (e.g., 'San Francisco, CA')."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The start date of the employment.",
+          "format": "date"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The end date of the employment. This field will be null if 'isCurrent' is true.",
+          "format": "date"
+        },
+        "isCurrent": {
+          "type": "boolean",
+          "description": "Indicates if this is the user's current or most recent job."
+        },
+        "bulletPoints": {
+          "type": "array",
+          "description": "An array of bullet points describing responsibilities and achievements in this role. This is where AI-generated content can be stored.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this work experience entry was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this work experience entry was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "jobTitle",
+        "companyName",
+        "location",
+        "startDate",
+        "bulletPoints",
+        "isCurrent",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Education": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Education",
+      "type": "object",
+      "description": "Details about a single educational background entry on a resume, including institution, degree, and dates.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Education entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this education entry belongs to. (Relationship: Resume 1:N Education)"
+        },
+        "institutionName": {
+          "type": "string",
+          "description": "The name of the educational institution."
+        },
+        "degree": {
+          "type": "string",
+          "description": "The degree or qualification obtained (e.g., 'Bachelor of Science', 'Master of Arts')."
+        },
+        "major": {
+          "type": "string",
+          "description": "The field of study or major."
+        },
+        "location": {
+          "type": "string",
+          "description": "The city and state/country where the institution is located."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The start date of the education period.",
+          "format": "date"
+        },
+        "graduationDate": {
+          "type": "string",
+          "description": "The date of graduation or expected graduation.",
+          "format": "date"
+        },
+        "gpa": {
+          "type": "number",
+          "description": "The Grade Point Average (GPA), if applicable."
+        },
+        "honorsAwards": {
+          "type": "array",
+          "description": "An array of honors or awards received during this educational period.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this education entry was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this education entry was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "institutionName",
+        "degree",
+        "major",
+        "location",
+        "graduationDate",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Skill": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Skill",
+      "type": "object",
+      "description": "Represents a specific skill or competency of the user to be listed on a resume.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Skill entity."
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to the Resume this skill belongs to. (Relationship: Resume 1:N Skill)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the skill (e.g., 'Python', 'Project Management', 'UI/UX Design')."
+        },
+        "category": {
+          "type": "string",
+          "description": "An optional category for the skill (e.g., 'Programming Languages', 'Soft Skills', 'Tools & Technologies')."
+        },
+        "level": {
+          "type": "string",
+          "description": "An optional indicator of proficiency level (e.g., 'Beginner', 'Intermediate', 'Advanced', 'Expert')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this skill entry was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this skill entry was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "resumeId",
+        "name",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Template": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Template",
+      "type": "object",
+      "description": "Defines a resume template, including its visual style and metadata, available for users to select.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Template entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The display name of the template (e.g., 'Modern Blue', 'Classic Professional')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the template's style and features."
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "description": "URL to a thumbnail image preview of the template.",
+          "format": "uri"
+        },
+        "styleConfiguration": {
+          "type": "string",
+          "description": "A string containing the style or layout configuration data for rendering this template (e.g., JSON blob, CSS rules, or internal identifier for a rendering engine)."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the template is currently available for users to select."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "thumbnailUrl",
+        "styleConfiguration",
+        "isActive"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}/userProfile",
+        "definition": {
+          "entityName": "UserResumeProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserResumeProfile"
+          },
+          "description": "Stores the single resume profile for a specific user. The 'id' field within the document should match the 'userId' from the path, ensuring direct ownership. This path provides authorization independence as the `userId` wildcard directly links to `request.auth.uid`."
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}",
+        "definition": {
+          "entityName": "Resume",
+          "schema": {
+            "$ref": "#/backend/entities/Resume"
+          },
+          "description": "Represents a single resume owned by a user. The 'userProfileId' field within the document must match the 'userId' from the path for robust authorization. This path embeds the owner's ID for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier for the resume document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/contactInformation/{contactInformationId}",
+        "definition": {
+          "entityName": "ContactInformation",
+          "schema": {
+            "$ref": "#/backend/entities/ContactInformation"
+          },
+          "description": "Stores contact details for a specific resume. The 'resumeId' field within the document must match the 'resumeId' from the path. Authorization is inherited from the parent resume path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the parent resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier of the parent resume."
+            },
+            {
+              "name": "contactInformationId",
+              "description": "The unique identifier for the contact information document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/workExperiences/{workExperienceId}",
+        "definition": {
+          "entityName": "WorkExperience",
+          "schema": {
+            "$ref": "#/backend/entities/WorkExperience"
+          },
+          "description": "Stores individual work experience entries for a specific resume. The 'resumeId' field within the document must match the 'resumeId' from the path. Authorization is inherited from the parent resume path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the parent resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier of the parent resume."
+            },
+            {
+              "name": "workExperienceId",
+              "description": "The unique identifier for the work experience document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/educations/{educationId}",
+        "definition": {
+          "entityName": "Education",
+          "schema": {
+            "$ref": "#/backend/entities/Education"
+          },
+          "description": "Stores individual education entries for a specific resume. The 'resumeId' field within the document must match the 'resumeId' from the path. Authorization is inherited from the parent resume path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the parent resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier of the parent resume."
+            },
+            {
+              "name": "educationId",
+              "description": "The unique identifier for the education document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}/skills/{skillId}",
+        "definition": {
+          "entityName": "Skill",
+          "schema": {
+            "$ref": "#/backend/entities/Skill"
+          },
+          "description": "Stores individual skill entries for a specific resume. The 'resumeId' field within the document must match the 'resumeId' from the path. Authorization is inherited from the parent resume path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns the parent resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique identifier of the parent resume."
+            },
+            {
+              "name": "skillId",
+              "description": "The unique identifier for the skill document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/templates/{templateId}",
+        "definition": {
+          "entityName": "Template",
+          "schema": {
+            "$ref": "#/backend/entities/Template"
+          },
+          "description": "Stores predefined, publicly accessible resume templates. These documents are read-only for all users.",
+          "params": [
+            {
+              "name": "templateId",
+              "description": "The unique identifier for the template document."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed following a strict hierarchical model, primarily based on user ownership. Each authenticated user will have a dedicated subtree under `/users/{userId}/` for all their personal resume data. This approach maximizes security, simplifies rule writing, and inherently supports Query Atomicity Guarantees (QAPs).\n\n**Authorization Independence:** This design achieves authorization independence by embedding the owner's `userId` directly into the path for all user-specific data. For instance, a user's resume profile is located at `/users/{userId}/userProfile`, and their individual resumes at `/users/{userId}/resumes/{resumeId}`. All sub-entities of a resume (contact information, work experience, education, skills) are stored as subcollections under their respective resume, like `/users/{userId}/resumes/{resumeId}/workExperiences/{workExperienceId}`. This means that any security rule for reading or writing a document can solely rely on comparing `request.auth.uid` with the `{userId}` wildcard in the path, without needing to perform `get()` operations on parent documents to determine ownership or permissions. For enhanced data integrity and self-contained documents, the `userProfileId` field in `Resume` documents will explicitly store the `userId` from the path, and `resumeId` fields in sub-collection documents will store the `resumeId` from their respective paths, acting as robust invariants.\n\n**Query Atomicity Guarantees (QAPs):** The structural segregation strategy directly supports QAPs. All user-specific data is contained within the `/users/{userId}/` path, ensuring that a `list` operation on a collection like `/users/{userId}/resumes` will inherently only return resumes owned by the `request.auth.uid`. Public, static data, such as `Template` entities, are stored in a top-level collection (`/templates`). These are globally readable, allowing for simple `allow read: true` rules. There is no mixing of public and private data in the same collection, eliminating the need for complex, inefficient, or insecure rules that attempt to filter results post-query."
+  }
+}
