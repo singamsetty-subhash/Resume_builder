@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, Sparkles, ChevronLeft, ChevronRight, Check, Search, Hash } from 'lucide-react';
+import { Plus, Trash2, Sparkles, ChevronLeft, ChevronRight, Check, Search, Hash, X } from 'lucide-react';
 import { generateAIBulletPoints } from '@/ai/flows/ai-bullet-point-generator-flow';
 import { useToast } from '@/hooks/use-toast';
 import { SKILL_CATEGORIES } from '@/lib/skills-data';
@@ -27,6 +28,7 @@ interface BuilderFormProps {
 export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFormProps) {
   const { toast } = useToast();
   const [aiLoading, setAiLoading] = useState<string | null>(null);
+  const [skillSearch, setSkillSearch] = useState('');
 
   const updateContact = (field: string, value: string) => {
     onChange({
@@ -108,6 +110,10 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
       });
     }
   };
+
+  const filteredSkillSuggestions = skillSearch 
+    ? SKILL_CATEGORIES.flatMap(c => c.skills).filter(s => s.toLowerCase().includes(skillSearch.toLowerCase()))
+    : [];
 
   const renderStep = () => {
     switch (step) {
@@ -249,11 +255,11 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
         );
       case 3:
         return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col h-full overflow-hidden">
-            <div className="flex justify-between items-center shrink-0">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-bold">Skills</h2>
-                <p className="text-muted-foreground text-sm">Pick suggestions or add your own.</p>
+                <p className="text-muted-foreground text-sm">Pick from categories or add your own.</p>
               </div>
               <Button onClick={() => onChange({ ...data, skills: [...data.skills, { id: Math.random().toString(), name: '', level: 'None' }]})} size="sm" variant="outline">
                 <Plus className="mr-2 h-4 w-4" /> Add Custom
@@ -261,72 +267,109 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
             </div>
 
             {/* Suggested Skills Section */}
-            <Card className="shrink-0 bg-slate-50/50">
-              <CardContent className="p-4">
-                <Tabs defaultValue={SKILL_CATEGORIES[0].name} className="w-full">
-                  <div className="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar pb-1">
-                    <Hash className="h-4 w-4 text-primary shrink-0" />
-                    <TabsList className="bg-transparent h-auto p-0 flex gap-2">
+            <Card className="bg-slate-50 border-none shadow-none">
+              <CardContent className="p-4 space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <Input 
+                    placeholder="Search skills (e.g. React, Python...)" 
+                    className="pl-9 bg-white"
+                    value={skillSearch}
+                    onChange={(e) => setSkillSearch(e.target.value)}
+                  />
+                  {skillSearch && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="absolute right-1 top-1 h-8 w-8"
+                      onClick={() => setSkillSearch('')}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+
+                {skillSearch ? (
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase text-slate-400">Search Results</Key>
+                    <div className="flex flex-wrap gap-2">
+                      {filteredSkillSuggestions.map(skill => {
+                        const isSelected = data.skills.some(s => s.name.toLowerCase() === skill.toLowerCase());
+                        return (
+                          <Badge 
+                            key={skill} 
+                            variant={isSelected ? "default" : "outline"}
+                            className="cursor-pointer py-1.5 px-3 rounded-full bg-white hover:bg-slate-100"
+                            onClick={() => toggleSkill(skill)}
+                          >
+                            {skill}
+                            {isSelected && <Check className="ml-1.5 h-3 w-3" />}
+                          </Badge>
+                        );
+                      })}
+                      {filteredSkillSuggestions.length === 0 && <p className="text-xs text-slate-400">No matching skills found.</p>}
+                    </div>
+                  </div>
+                ) : (
+                  <Tabs defaultValue={SKILL_CATEGORIES[0].name} className="w-full">
+                    <TabsList className="w-full justify-start overflow-x-auto no-scrollbar bg-transparent h-auto p-0 mb-4 gap-2">
                       {SKILL_CATEGORIES.map(cat => (
                         <TabsTrigger 
                           key={cat.name} 
                           value={cat.name}
-                          className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-full text-xs px-3 py-1.5 border border-transparent data-[state=active]:border-slate-200"
+                          className="rounded-full px-4 py-1.5 text-xs data-[state=active]:bg-primary data-[state=active]:text-white bg-white border"
                         >
                           {cat.name}
                         </TabsTrigger>
                       ))}
                     </TabsList>
-                  </div>
-                  {SKILL_CATEGORIES.map(cat => (
-                    <TabsContent key={cat.name} value={cat.name} className="mt-0">
-                      <div className="flex flex-wrap gap-2">
-                        {cat.skills.map(skill => {
-                          const isSelected = data.skills.some(s => s.name.toLowerCase() === skill.toLowerCase());
-                          return (
-                            <Badge 
-                              key={skill} 
-                              variant={isSelected ? "default" : "outline"}
-                              className={`cursor-pointer transition-all hover:scale-105 py-1.5 px-3 rounded-full ${isSelected ? 'bg-primary border-primary' : 'bg-white hover:bg-slate-50'}`}
-                              onClick={() => toggleSkill(skill)}
-                            >
-                              {skill}
-                              {isSelected && <Check className="ml-1.5 h-3 w-3" />}
-                            </Badge>
-                          );
-                        })}
-                      </div>
-                    </TabsContent>
-                  ))}
-                </Tabs>
+                    {SKILL_CATEGORIES.map(cat => (
+                      <TabsContent key={cat.name} value={cat.name} className="mt-0">
+                        <div className="flex flex-wrap gap-2">
+                          {cat.skills.map(skill => {
+                            const isSelected = data.skills.some(s => s.name.toLowerCase() === skill.toLowerCase());
+                            return (
+                              <Badge 
+                                key={skill} 
+                                variant={isSelected ? "default" : "outline"}
+                                className={`cursor-pointer transition-all hover:scale-105 py-1.5 px-3 rounded-full ${isSelected ? 'bg-primary border-primary text-white' : 'bg-white hover:bg-slate-100'}`}
+                                onClick={() => toggleSkill(skill)}
+                              >
+                                {skill}
+                                {isSelected && <Check className="ml-1.5 h-3 w-3" />}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      </TabsContent>
+                    ))}
+                  </Tabs>
+                )}
               </CardContent>
             </Card>
 
-            <Separator className="shrink-0" />
+            <Separator />
 
-            {/* Manual Skills List */}
-            <div className="flex-grow overflow-y-auto min-h-[200px] px-1 pb-4">
-              <Label className="mb-3 block text-xs font-bold uppercase tracking-wider text-slate-400">Selected & Custom Skills</Label>
-              <div className="grid grid-cols-1 gap-3">
+            {/* Selected Skills List */}
+            <div className="space-y-4">
+              <Label className="text-xs font-bold uppercase tracking-widest text-slate-400">Your Selected Skills</Label>
+              <div className="grid gap-3">
                 {data.skills.map((skill) => (
-                  <div key={skill.id} className="flex gap-2 items-center group">
-                    <div className="relative flex-grow">
-                      <Input 
-                        value={skill.name} 
-                        onChange={(e) => onChange({ ...data, skills: data.skills.map(s => s.id === skill.id ? { ...s, name: e.target.value } : s) })} 
-                        placeholder="Type a skill..." 
-                        className="bg-white"
-                      />
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => onChange({ ...data, skills: data.skills.filter(s => s.id !== skill.id) })} className="text-destructive shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div key={skill.id} className="flex gap-2 items-center animate-in fade-in zoom-in-95 duration-200">
+                    <Input 
+                      value={skill.name} 
+                      onChange={(e) => onChange({ ...data, skills: data.skills.map(s => s.id === skill.id ? { ...s, name: e.target.value } : s) })} 
+                      placeholder="Skill name" 
+                      className="bg-white"
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => onChange({ ...data, skills: data.skills.filter(s => s.id !== skill.id) })} className="text-destructive shrink-0">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}
                 {data.skills.length === 0 && (
-                  <div className="text-center py-12 border-2 border-dashed rounded-xl border-slate-100 text-muted-foreground flex flex-col items-center gap-2">
-                    <Search className="h-8 w-8 text-slate-200" />
-                    <p>No skills added yet. Select from the suggestions above.</p>
+                  <div className="text-center py-8 border-2 border-dashed rounded-xl text-slate-400 text-sm">
+                    No skills selected. Click suggestions above or add custom ones.
                   </div>
                 )}
               </div>
