@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -7,10 +8,9 @@ import { ResumeData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Download, FileText, ArrowLeft, Monitor, Smartphone, Layout, Cloud, Check } from 'lucide-react';
 import Link from 'next/link';
-import { useFirestore, useUser, useAuth, useMemoFirebase } from '@/firebase';
-import { doc, collection, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useUser, useAuth, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
 
 const INITIAL_DATA: ResumeData = {
@@ -63,12 +63,11 @@ export default function BuilderPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
-  const { firestore } = useFirestore() ? { firestore: useFirestore() } : { firestore: null };
+  const firestore = useFirestore();
   const auth = useAuth();
   const { user } = useUser();
   const { toast } = useToast();
 
-  // Ensure user is signed in
   useEffect(() => {
     if (!user && auth) {
       initiateAnonymousSignIn(auth);
@@ -87,36 +86,37 @@ export default function BuilderPage() {
 
     setIsSaving(true);
     
-    // Using a fixed ID for the current "main" resume for simplicity in MVP
     const resumeId = "current-resume";
     const resumeRef = doc(firestore, 'users', user.uid, 'resumes', resumeId);
 
-    const resumePayload = {
+    const resumePayload: any = {
       ...data,
       userProfileId: user.uid,
       title: data.contact.fullName ? `${data.contact.fullName}'s Resume` : 'Untitled Resume',
       updatedAt: serverTimestamp(),
-      createdAt: lastSaved ? undefined : serverTimestamp(), // Only set on first save
     };
+
+    if (!lastSaved) {
+      resumePayload.createdAt = serverTimestamp();
+    }
 
     setDoc(resumeRef, resumePayload, { merge: true })
       .then(() => {
         setLastSaved(new Date());
         setIsSaving(false);
       })
-      .catch((err) => {
-        console.error("Save error:", err);
+      .catch(async (error) => {
         setIsSaving(false);
-        toast({
-          title: "Save Failed",
-          description: "We couldn't save your progress. Please check your connection.",
-          variant: "destructive",
+        const permissionError = new FirestorePermissionError({
+          path: resumeRef.path,
+          operation: 'write',
+          requestResourceData: resumePayload,
         });
+        errorEmitter.emit('permission-error', permissionError);
       });
   };
 
   const handlePrint = () => {
-    // Save before printing to ensure cloud is up to date
     handleSave();
     setIsPrinting(true);
     setTimeout(() => {
@@ -187,7 +187,6 @@ export default function BuilderPage() {
       </header>
 
       <main className="flex-grow flex flex-col md:flex-row h-[calc(100vh-4rem)] overflow-hidden">
-        {/* Form Section */}
         <div className="no-print w-full md:w-[450px] lg:w-[550px] border-r bg-white flex flex-col shadow-xl z-10 shrink-0">
           <div className="p-6 flex-grow overflow-hidden flex flex-col">
              <nav className="mb-6 flex justify-between px-2 overflow-x-auto gap-4 no-scrollbar">
@@ -216,7 +215,6 @@ export default function BuilderPage() {
           </div>
         </div>
 
-        {/* Preview Section */}
         <div className={`flex-grow bg-slate-100 flex items-center justify-center p-4 md:p-8 overflow-y-auto print:p-0 print:bg-white transition-all duration-500 ${viewMode === 'mobile' ? 'max-w-2xl mx-auto' : ''}`}>
           <div className="relative animate-in fade-in zoom-in-95 duration-700">
              <ResumePreview data={data} scale={viewMode === 'mobile' ? 0.4 : 0.8} />
@@ -224,7 +222,6 @@ export default function BuilderPage() {
         </div>
       </main>
 
-      {/* Hidden container for full-size print */}
       <div className="hidden print:block absolute inset-0 bg-white">
         <ResumePreview data={data} scale={1} />
       </div>
