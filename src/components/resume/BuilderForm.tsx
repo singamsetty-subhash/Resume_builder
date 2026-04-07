@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ResumeData, Experience, Education, Skill } from '@/lib/types';
+import { ResumeData, Experience, Education, Skill, Certification } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, Sparkles, ChevronLeft, ChevronRight, Check, Search, X, Download, Cloud } from 'lucide-react';
+import { Plus, Trash2, Sparkles, ChevronLeft, ChevronRight, Check, Search, X, Download, Cloud, Award } from 'lucide-react';
 import { generateAIBulletPoints } from '@/ai/flows/ai-bullet-point-generator-flow';
 import { useToast } from '@/hooks/use-toast';
 import { SKILL_CATEGORIES } from '@/lib/skills-data';
@@ -57,6 +57,27 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
     onChange({
       ...data,
       experience: data.experience.map(e => e.id === id ? { ...e, [field]: value } : e)
+    });
+  };
+
+  const addCertification = () => {
+    const newCert: Certification = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: '',
+      issuer: '',
+      date: '',
+    };
+    onChange({ ...data, certifications: [...(data.certifications || []), newCert] });
+  };
+
+  const removeCertification = (id: string) => {
+    onChange({ ...data, certifications: data.certifications.filter(c => c.id !== id) });
+  };
+
+  const updateCertification = (id: string, field: keyof Certification, value: string) => {
+    onChange({
+      ...data,
+      certifications: data.certifications.map(c => c.id === id ? { ...c, [field]: value } : c)
     });
   };
 
@@ -369,6 +390,50 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
       case 4:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">Certifications</h2>
+                <p className="text-muted-foreground text-sm">Add your professional certifications.</p>
+              </div>
+              <Button onClick={addCertification} size="sm" variant="outline">
+                <Plus className="mr-2 h-4 w-4" /> Add Cert
+              </Button>
+            </div>
+            {data.certifications?.map((cert, idx) => (
+              <Card key={cert.id}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-lg">Certification #{idx + 1}</CardTitle>
+                  <Button variant="ghost" size="icon" onClick={() => removeCertification(cert.id)} className="text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2 col-span-2">
+                    <Label>Certification Name</Label>
+                    <Input value={cert.name} onChange={(e) => updateCertification(cert.id, 'name', e.target.value)} placeholder="AWS Certified Solutions Architect" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Issuing Organization</Label>
+                    <Input value={cert.issuer} onChange={(e) => updateCertification(cert.id, 'issuer', e.target.value)} placeholder="Amazon Web Services" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Date Obtained</Label>
+                    <Input value={cert.date} onChange={(e) => updateCertification(cert.id, 'date', e.target.value)} placeholder="March 2023" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {(!data.certifications || data.certifications.length === 0) && (
+              <div className="text-center py-12 border-2 border-dashed rounded-3xl text-slate-400">
+                <Award className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p>No certifications added yet.</p>
+              </div>
+            )}
+          </div>
+        );
+      case 5:
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div>
                 <h2 className="text-2xl font-bold">Choose a Template</h2>
                 <p className="text-muted-foreground text-sm">Pick the style that best fits your career stage.</p>
@@ -396,7 +461,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
               </div>
           </div>
         );
-      case 5:
+      case 6:
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="text-center space-y-4">
@@ -459,12 +524,12 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
           <ChevronLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         <div className="flex items-center gap-1">
-          {[0, 1, 2, 3, 4, 5].map((s) => (
+          {[0, 1, 2, 3, 4, 5, 6].map((s) => (
             <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s === step ? 'bg-primary w-10' : 'bg-slate-200'}`} />
           ))}
         </div>
         <Button onClick={onNext}>
-          {step === 5 ? 'Download PDF' : 'Continue'} <ChevronRight className="ml-2 h-4 w-4" />
+          {step === 6 ? 'Download PDF' : 'Continue'} <ChevronRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
     </div>

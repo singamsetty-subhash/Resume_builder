@@ -2,7 +2,7 @@ import React from 'react';
 import { ResumeTemplateProps } from '@/lib/types';
 
 export function ModernTemplate({ data }: ResumeTemplateProps) {
-  const { contact, experience, education, skills } = data;
+  const { contact, experience, education, skills, certifications } = data;
 
   return (
     <div className="p-12 text-slate-800 h-full flex flex-col">
@@ -67,6 +67,21 @@ export function ModernTemplate({ data }: ResumeTemplateProps) {
               ))}
             </div>
           </section>
+
+          {certifications && certifications.length > 0 && (
+            <section>
+              <h2 className="text-xl font-bold text-primary border-b border-slate-200 mb-4 pb-1 uppercase tracking-wider">Certifications</h2>
+              <div className="space-y-3">
+                {certifications.map((cert) => (
+                  <div key={cert.id} className="text-sm">
+                    <div className="font-bold text-slate-800">{cert.name}</div>
+                    <div className="text-slate-500">{cert.issuer}</div>
+                    <div className="text-xs text-slate-400 italic">{cert.date}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>

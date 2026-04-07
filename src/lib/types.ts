@@ -32,11 +32,20 @@ export type Skill = {
   level: 'Beginner' | 'Intermediate' | 'Expert' | 'None';
 };
 
+export type Certification = {
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
+  url?: string;
+};
+
 export type ResumeData = {
   contact: ContactInfo;
   experience: Experience[];
   education: Education[];
   skills: Skill[];
+  certifications: Certification[];
   templateId: string;
 };
 

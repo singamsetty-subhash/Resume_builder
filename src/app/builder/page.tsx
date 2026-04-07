@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -6,7 +5,7 @@ import { BuilderForm } from '@/components/resume/BuilderForm';
 import { ResumePreview } from '@/components/resume/ResumePreview';
 import { ResumeData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, ArrowLeft, Monitor, Smartphone, Layout, Cloud, Check } from 'lucide-react';
+import { Download, FileText, ArrowLeft, Monitor, Smartphone, Layout, Cloud, Check, Award } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useAuth, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -52,6 +51,7 @@ const INITIAL_DATA: ResumeData = {
     { id: '3', name: 'Next.js', level: 'Expert' },
     { id: '4', name: 'Node.js', level: 'Intermediate' },
   ],
+  certifications: [],
   templateId: 'modern',
 };
 
@@ -130,6 +130,7 @@ export default function BuilderPage() {
     { name: 'Experience', icon: Layout },
     { name: 'Education', icon: Layout },
     { name: 'Skills', icon: Layout },
+    { name: 'Certs', icon: Award },
     { name: 'Template', icon: Layout },
     { name: 'Review', icon: Check },
   ];
@@ -197,7 +198,7 @@ export default function BuilderPage() {
                     className={`flex flex-col items-center gap-1 group transition-all shrink-0`}
                   >
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${idx === step ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'border-slate-200 text-slate-400 group-hover:border-slate-300'}`}>
-                      {idx < step ? <Check className="h-5 w-5" /> : <span className="text-sm font-bold">{idx + 1}</span>}
+                      {idx < step ? <Check className="h-5 w-5" /> : <span className="text-sm font-bold">{(s.icon as any) === Award ? <Award className="h-5 w-5" /> : idx + 1}</span>}
                     </div>
                     <span className={`text-[10px] font-bold uppercase tracking-widest ${idx === step ? 'text-primary' : 'text-slate-400'}`}>{s.name}</span>
                   </button>
@@ -208,7 +209,7 @@ export default function BuilderPage() {
                 data={data} 
                 onChange={setData} 
                 step={step} 
-                onNext={() => step < 5 ? setStep(step + 1) : handlePrint()}
+                onNext={() => step < 6 ? setStep(step + 1) : handlePrint()}
                 onPrev={() => setStep(Math.max(0, step - 1))}
               />
              </div>

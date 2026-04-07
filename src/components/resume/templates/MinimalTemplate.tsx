@@ -2,7 +2,7 @@ import React from 'react';
 import { ResumeTemplateProps } from '@/lib/types';
 
 export function MinimalTemplate({ data }: ResumeTemplateProps) {
-  const { contact, experience, education, skills } = data;
+  const { contact, experience, education, skills, certifications } = data;
 
   return (
     <div className="p-16 text-slate-900 font-light tracking-wide">
@@ -53,15 +53,32 @@ export function MinimalTemplate({ data }: ResumeTemplateProps) {
           </div>
         </section>
 
-        <section>
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-6">Skills</h2>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-            {skills.map((skill) => (
-              <span key={skill.id} className="font-medium text-slate-700">
-                {skill.name}
-              </span>
-            ))}
+        <section className="space-y-8">
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-6">Skills</h2>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+              {skills.map((skill) => (
+                <span key={skill.id} className="font-medium text-slate-700">
+                  {skill.name}
+                </span>
+              ))}
+            </div>
           </div>
+
+          {certifications && certifications.length > 0 && (
+            <div>
+              <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-6">Certifications</h2>
+              <div className="space-y-4">
+                {certifications.map((cert) => (
+                  <div key={cert.id} className="text-sm">
+                    <div className="font-bold text-slate-800">{cert.name}</div>
+                    <div className="text-slate-600">{cert.issuer}</div>
+                    <div className="text-xs text-slate-400 mt-0.5">{cert.date}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </div>
