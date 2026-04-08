@@ -275,6 +275,50 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
       case 3:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">Certifications</h2>
+                <p className="text-muted-foreground text-sm">Add your professional certifications.</p>
+              </div>
+              <Button onClick={addCertification} size="sm" variant="outline">
+                <Plus className="mr-2 h-4 w-4" /> Add Cert
+              </Button>
+            </div>
+            {data.certifications?.map((cert, idx) => (
+              <Card key={cert.id}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-lg">Certification #{idx + 1}</CardTitle>
+                  <Button variant="ghost" size="icon" onClick={() => removeCertification(cert.id)} className="text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2 col-span-2">
+                    <Label>Certification Name</Label>
+                    <Input value={cert.name} onChange={(e) => updateCertification(cert.id, 'name', e.target.value)} placeholder="AWS Certified Solutions Architect" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Issuing Organization</Label>
+                    <Input value={cert.issuer} onChange={(e) => updateCertification(cert.id, 'issuer', e.target.value)} placeholder="Amazon Web Services" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Date Obtained</Label>
+                    <Input value={cert.date} onChange={(e) => updateCertification(cert.id, 'date', e.target.value)} placeholder="March 2023" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {(!data.certifications || data.certifications.length === 0) && (
+              <div className="text-center py-12 border-2 border-dashed rounded-3xl text-slate-400">
+                <Award className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p>No certifications added yet.</p>
+              </div>
+            )}
+          </div>
+        );
+      case 4:
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-bold">Skills</h2>
@@ -385,50 +429,6 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
                 ))}
               </div>
             </div>
-          </div>
-        );
-      case 4:
-        return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold">Certifications</h2>
-                <p className="text-muted-foreground text-sm">Add your professional certifications.</p>
-              </div>
-              <Button onClick={addCertification} size="sm" variant="outline">
-                <Plus className="mr-2 h-4 w-4" /> Add Cert
-              </Button>
-            </div>
-            {data.certifications?.map((cert, idx) => (
-              <Card key={cert.id}>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-lg">Certification #{idx + 1}</CardTitle>
-                  <Button variant="ghost" size="icon" onClick={() => removeCertification(cert.id)} className="text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2 col-span-2">
-                    <Label>Certification Name</Label>
-                    <Input value={cert.name} onChange={(e) => updateCertification(cert.id, 'name', e.target.value)} placeholder="AWS Certified Solutions Architect" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Issuing Organization</Label>
-                    <Input value={cert.issuer} onChange={(e) => updateCertification(cert.id, 'issuer', e.target.value)} placeholder="Amazon Web Services" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Date Obtained</Label>
-                    <Input value={cert.date} onChange={(e) => updateCertification(cert.id, 'date', e.target.value)} placeholder="March 2023" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {(!data.certifications || data.certifications.length === 0) && (
-              <div className="text-center py-12 border-2 border-dashed rounded-3xl text-slate-400">
-                <Award className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                <p>No certifications added yet.</p>
-              </div>
-            )}
           </div>
         );
       case 5:

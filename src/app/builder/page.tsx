@@ -129,8 +129,8 @@ export default function BuilderPage() {
     { name: 'Contact', icon: FileText },
     { name: 'Experience', icon: Layout },
     { name: 'Education', icon: Layout },
-    { name: 'Skills', icon: Layout },
     { name: 'Certs', icon: Award },
+    { name: 'Skills', icon: Layout },
     { name: 'Template', icon: Layout },
     { name: 'Review', icon: Check },
   ];
