@@ -46,6 +46,8 @@ export type Certification = {
   issuer: string;
   date: string;
   url?: string;
+  fileName?: string;
+  fileData?: string; // Data URI for the uploaded file
 };
 
 export type ResumeData = {

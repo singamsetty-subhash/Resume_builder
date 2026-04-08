@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ResumeData, Experience, Education, Skill, Certification, Project } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, Sparkles, ChevronLeft, ChevronRight, Check, Search, X, Download, Cloud, Award, Briefcase } from 'lucide-react';
+import { Plus, Trash2, Sparkles, ChevronLeft, ChevronRight, Check, Search, X, Download, Cloud, Award, Briefcase, FileUp, FileCheck } from 'lucide-react';
 import { generateAIBulletPoints } from '@/ai/flows/ai-bullet-point-generator-flow';
 import { useToast } from '@/hooks/use-toast';
 import { SKILL_CATEGORIES } from '@/lib/skills-data';
@@ -27,6 +27,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
   const { toast } = useToast();
   const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [skillSearch, setSkillSearch] = useState('');
+  const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
   const updateContact = (field: string, value: string) => {
     onChange({
@@ -96,11 +97,37 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
     onChange({ ...data, certifications: data.certifications.filter(c => c.id !== id) });
   };
 
-  const updateCertification = (id: string, field: keyof Certification, value: string) => {
+  const updateCertification = (id: string, field: keyof Certification, value: any) => {
     onChange({
       ...data,
       certifications: data.certifications.map(c => c.id === id ? { ...c, [field]: value } : c)
     });
+  };
+
+  const handleFileUpload = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload a certificate smaller than 2MB.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUri = event.target?.result as string;
+      updateCertification(id, 'fileName', file.name);
+      updateCertification(id, 'fileData', dataUri);
+      toast({
+        title: "Certificate Uploaded",
+        description: `${file.name} has been attached.`,
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleAiImprove = async (exp: Experience) => {
@@ -354,7 +381,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
              <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-bold">Certifications</h2>
-                <p className="text-muted-foreground text-sm">Add your professional certifications.</p>
+                <p className="text-muted-foreground text-sm">Add and upload your professional credentials.</p>
               </div>
               <Button onClick={addCertification} size="sm" variant="outline">
                 <Plus className="mr-2 h-4 w-4" /> Add Cert
@@ -368,18 +395,55 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2 col-span-2">
-                    <Label>Certification Name</Label>
-                    <Input value={cert.name} onChange={(e) => updateCertification(cert.id, 'name', e.target.value)} placeholder="AWS Certified Solutions Architect" />
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2 col-span-2">
+                      <Label>Certification Name</Label>
+                      <Input value={cert.name} onChange={(e) => updateCertification(cert.id, 'name', e.target.value)} placeholder="AWS Certified Solutions Architect" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Issuing Organization</Label>
+                      <Input value={cert.issuer} onChange={(e) => updateCertification(cert.id, 'issuer', e.target.value)} placeholder="Amazon Web Services" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Date Obtained</Label>
+                      <Input value={cert.date} onChange={(e) => updateCertification(cert.id, 'date', e.target.value)} placeholder="March 2023" />
+                    </div>
                   </div>
+                  
                   <div className="space-y-2">
-                    <Label>Issuing Organization</Label>
-                    <Input value={cert.issuer} onChange={(e) => updateCertification(cert.id, 'issuer', e.target.value)} placeholder="Amazon Web Services" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Date Obtained</Label>
-                    <Input value={cert.date} onChange={(e) => updateCertification(cert.id, 'date', e.target.value)} placeholder="March 2023" />
+                    <Label>Attachment (Internal Device)</Label>
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        ref={el => { fileInputRefs.current[cert.id] = el }} 
+                        onChange={(e) => handleFileUpload(cert.id, e)}
+                        accept=".pdf,.jpg,.jpeg,.png"
+                      />
+                      <Button 
+                        variant="outline" 
+                        className="w-full gap-2 border-dashed" 
+                        onClick={() => fileInputRefs.current[cert.id]?.click()}
+                      >
+                        {cert.fileName ? <FileCheck className="h-4 w-4 text-emerald-500" /> : <FileUp className="h-4 w-4" />}
+                        {cert.fileName ? cert.fileName : 'Select Certificate File'}
+                      </Button>
+                      {cert.fileName && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="shrink-0 text-slate-400 hover:text-destructive"
+                          onClick={() => {
+                            updateCertification(cert.id, 'fileName', undefined);
+                            updateCertification(cert.id, 'fileData', undefined);
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-slate-400 italic">Supports PDF, JPG, PNG (Max 2MB)</p>
                   </div>
                 </CardContent>
               </Card>
