@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useRef } from 'react';
@@ -8,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, Sparkles, ChevronLeft, ChevronRight, Check, Search, X, Download, Cloud, Award, Briefcase, FileUp, FileCheck } from 'lucide-react';
+import { Plus, Trash2, ChevronLeft, ChevronRight, Check, Search, X, Download, Cloud, Award, Briefcase, FileUp, FileCheck } from 'lucide-react';
 import { generateAIBulletPoints } from '@/ai/flows/ai-bullet-point-generator-flow';
 import { useToast } from '@/hooks/use-toast';
 import { SKILL_CATEGORIES } from '@/lib/skills-data';
@@ -185,7 +186,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
 
   const renderStep = () => {
     switch (step) {
-      case 0:
+      case 0: // Contact
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Card>
@@ -218,13 +219,51 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
             </Card>
           </div>
         );
-      case 1:
+      case 1: // Education
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">Education</h2>
+                <p className="text-muted-foreground text-sm">Where did you study?</p>
+              </div>
+              <Button onClick={() => onChange({ ...data, education: [...data.education, { id: Math.random().toString(), degree: '', institution: '', location: '', graduationDate: '' }]})} size="sm" variant="outline">
+                <Plus className="mr-2 h-4 w-4" /> Add Education
+              </Button>
+            </div>
+            {data.education.map((edu, idx) => (
+              <Card key={edu.id}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-lg">Education #{idx + 1}</CardTitle>
+                  <Button variant="ghost" size="icon" onClick={() => onChange({ ...data, education: data.education.filter(e => e.id !== edu.id) })} className="text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2 col-span-2">
+                    <Label>Degree / Certification</Label>
+                    <Input value={edu.degree} onChange={(e) => onChange({ ...data, education: data.education.map(ed => ed.id === edu.id ? { ...ed, degree: e.target.value } : ed) })} placeholder="B.S. Computer Science" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Institution</Label>
+                    <Input value={edu.institution} onChange={(e) => onChange({ ...data, education: data.education.map(ed => ed.id === edu.id ? { ...ed, institution: e.target.value } : ed) })} placeholder="University of California" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Graduation Date</Label>
+                    <Input value={edu.graduationDate} onChange={(e) => onChange({ ...data, education: data.education.map(ed => ed.id === edu.id ? { ...ed, graduationDate: e.target.value } : ed) })} placeholder="May 2018" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        );
+      case 2: // Experience
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-2xl font-bold">Work Experience</h2>
-                <p className="text-muted-foreground text-sm">Add your relevant work history.</p>
+                <p className="text-muted-foreground text-sm">Add your relevant work history (Optional).</p>
               </div>
               <Button onClick={addExperience} size="sm" variant="outline">
                 <Plus className="mr-2 h-4 w-4" /> Add Work
@@ -281,182 +320,15 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
                 </CardContent>
               </Card>
             ))}
-          </div>
-        );
-      case 2:
-        return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold">Personal Projects</h2>
-                <p className="text-muted-foreground text-sm">Showcase your side projects and creations.</p>
-              </div>
-              <Button onClick={addProject} size="sm" variant="outline">
-                <Plus className="mr-2 h-4 w-4" /> Add Project
-              </Button>
-            </div>
-            {data.projects?.map((project, idx) => (
-              <Card key={project.id}>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-lg">Project #{idx + 1}</CardTitle>
-                  <Button variant="ghost" size="icon" onClick={() => removeProject(project.id)} className="text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2 col-span-2">
-                      <Label>Project Name</Label>
-                      <Input value={project.name} onChange={(e) => updateProject(project.id, 'name', e.target.value)} placeholder="Resume Builder AI" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Link (Optional)</Label>
-                      <Input value={project.link} onChange={(e) => updateProject(project.id, 'link', e.target.value)} placeholder="github.com/username/project" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Technologies (Comma separated)</Label>
-                      <Input value={project.technologies.join(', ')} onChange={(e) => updateProject(project.id, 'technologies', e.target.value.split(',').map(t => t.trim()))} placeholder="React, Next.js, Firebase" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Description</Label>
-                    <Textarea 
-                      placeholder="Briefly describe what you built and the impact it had."
-                      value={project.description}
-                      onChange={(e) => updateProject(project.id, 'description', e.target.value)}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {(!data.projects || data.projects.length === 0) && (
+            {data.experience.length === 0 && (
               <div className="text-center py-12 border-2 border-dashed rounded-3xl text-slate-400">
                 <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                <p>No projects added yet.</p>
+                <p>No experience added yet. Click above to add one.</p>
               </div>
             )}
           </div>
         );
-      case 3:
-        return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold">Education</h2>
-                <p className="text-muted-foreground text-sm">Where did you study?</p>
-              </div>
-              <Button onClick={() => onChange({ ...data, education: [...data.education, { id: Math.random().toString(), degree: '', institution: '', location: '', graduationDate: '' }]})} size="sm" variant="outline">
-                <Plus className="mr-2 h-4 w-4" /> Add Education
-              </Button>
-            </div>
-            {data.education.map((edu, idx) => (
-              <Card key={edu.id}>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-lg">Education #{idx + 1}</CardTitle>
-                  <Button variant="ghost" size="icon" onClick={() => onChange({ ...data, education: data.education.filter(e => e.id !== edu.id) })} className="text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2 col-span-2">
-                    <Label>Degree / Certification</Label>
-                    <Input value={edu.degree} onChange={(e) => onChange({ ...data, education: data.education.map(ed => ed.id === edu.id ? { ...ed, degree: e.target.value } : ed) })} placeholder="B.S. Computer Science" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Institution</Label>
-                    <Input value={edu.institution} onChange={(e) => onChange({ ...data, education: data.education.map(ed => ed.id === edu.id ? { ...ed, institution: e.target.value } : ed) })} placeholder="University of California" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Graduation Date</Label>
-                    <Input value={edu.graduationDate} onChange={(e) => onChange({ ...data, education: data.education.map(ed => ed.id === edu.id ? { ...ed, graduationDate: e.target.value } : ed) })} placeholder="May 2018" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        );
-      case 4:
-        return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold">Certifications</h2>
-                <p className="text-muted-foreground text-sm">Add and upload your professional credentials.</p>
-              </div>
-              <Button onClick={addCertification} size="sm" variant="outline">
-                <Plus className="mr-2 h-4 w-4" /> Add Cert
-              </Button>
-            </div>
-            {data.certifications?.map((cert, idx) => (
-              <Card key={cert.id}>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-lg">Certification #{idx + 1}</CardTitle>
-                  <Button variant="ghost" size="icon" onClick={() => removeCertification(cert.id)} className="text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2 col-span-2">
-                      <Label>Certification Name</Label>
-                      <Input value={cert.name} onChange={(e) => updateCertification(cert.id, 'name', e.target.value)} placeholder="AWS Certified Solutions Architect" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Issuing Organization</Label>
-                      <Input value={cert.issuer} onChange={(e) => updateCertification(cert.id, 'issuer', e.target.value)} placeholder="Amazon Web Services" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Date Obtained</Label>
-                      <Input value={cert.date} onChange={(e) => updateCertification(cert.id, 'date', e.target.value)} placeholder="March 2023" />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Attachment (Internal Device)</Label>
-                    <div className="flex items-center gap-3">
-                      <input 
-                        type="file" 
-                        className="hidden" 
-                        ref={el => { fileInputRefs.current[cert.id] = el }} 
-                        onChange={(e) => handleFileUpload(cert.id, e)}
-                        accept=".pdf,.jpg,.jpeg,.png"
-                      />
-                      <Button 
-                        variant="outline" 
-                        className="w-full gap-2 border-dashed" 
-                        onClick={() => fileInputRefs.current[cert.id]?.click()}
-                      >
-                        {cert.fileName ? <FileCheck className="h-4 w-4 text-emerald-500" /> : <FileUp className="h-4 w-4" />}
-                        {cert.fileName ? cert.fileName : 'Select Certificate File'}
-                      </Button>
-                      {cert.fileName && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="shrink-0 text-slate-400 hover:text-destructive"
-                          onClick={() => {
-                            updateCertification(cert.id, 'fileName', undefined);
-                            updateCertification(cert.id, 'fileData', undefined);
-                          }}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                    <p className="text-[10px] text-slate-400 italic">Supports PDF, JPG, PNG (Max 2MB)</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {(!data.certifications || data.certifications.length === 0) && (
-              <div className="text-center py-12 border-2 border-dashed rounded-3xl text-slate-400">
-                <Award className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                <p>No certifications added yet.</p>
-              </div>
-            )}
-          </div>
-        );
-      case 5:
+      case 3: // Skills
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center">
@@ -571,7 +443,141 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
             </div>
           </div>
         );
-      case 6:
+      case 4: // Certifications
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+             <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">Certifications</h2>
+                <p className="text-muted-foreground text-sm">Add and upload your professional credentials.</p>
+              </div>
+              <Button onClick={addCertification} size="sm" variant="outline">
+                <Plus className="mr-2 h-4 w-4" /> Add Cert
+              </Button>
+            </div>
+            {data.certifications?.map((cert, idx) => (
+              <Card key={cert.id}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-lg">Certification #{idx + 1}</CardTitle>
+                  <Button variant="ghost" size="icon" onClick={() => removeCertification(cert.id)} className="text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2 col-span-2">
+                      <Label>Certification Name</Label>
+                      <Input value={cert.name} onChange={(e) => updateCertification(cert.id, 'name', e.target.value)} placeholder="AWS Certified Solutions Architect" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Issuing Organization</Label>
+                      <Input value={cert.issuer} onChange={(e) => updateCertification(cert.id, 'issuer', e.target.value)} placeholder="Amazon Web Services" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Date Obtained</Label>
+                      <Input value={cert.date} onChange={(e) => updateCertification(cert.id, 'date', e.target.value)} placeholder="March 2023" />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Attachment (Internal Device)</Label>
+                    <div className="flex items-center gap-3">
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        ref={el => { fileInputRefs.current[cert.id] = el }} 
+                        onChange={(e) => handleFileUpload(cert.id, e)}
+                        accept=".pdf,.jpg,.jpeg,.png"
+                      />
+                      <Button 
+                        variant="outline" 
+                        className="w-full gap-2 border-dashed" 
+                        onClick={() => fileInputRefs.current[cert.id]?.click()}
+                      >
+                        {cert.fileName ? <FileCheck className="h-4 w-4 text-emerald-500" /> : <FileUp className="h-4 w-4" />}
+                        {cert.fileName ? cert.fileName : 'Select Certificate File'}
+                      </Button>
+                      {cert.fileName && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="shrink-0 text-slate-400 hover:text-destructive"
+                          onClick={() => {
+                            updateCertification(cert.id, 'fileName', undefined);
+                            updateCertification(cert.id, 'fileData', undefined);
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {(!data.certifications || data.certifications.length === 0) && (
+              <div className="text-center py-12 border-2 border-dashed rounded-3xl text-slate-400">
+                <Award className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p>No certifications added yet.</p>
+              </div>
+            )}
+          </div>
+        );
+      case 5: // Projects
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">Personal Projects</h2>
+                <p className="text-muted-foreground text-sm">Showcase your side projects and creations.</p>
+              </div>
+              <Button onClick={addProject} size="sm" variant="outline">
+                <Plus className="mr-2 h-4 w-4" /> Add Project
+              </Button>
+            </div>
+            {data.projects?.map((project, idx) => (
+              <Card key={project.id}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-lg">Project #{idx + 1}</CardTitle>
+                  <Button variant="ghost" size="icon" onClick={() => removeProject(project.id)} className="text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2 col-span-2">
+                      <Label>Project Name</Label>
+                      <Input value={project.name} onChange={(e) => updateProject(project.id, 'name', e.target.value)} placeholder="Resume Builder AI" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Link (Optional)</Label>
+                      <Input value={project.link} onChange={(e) => updateProject(project.id, 'link', e.target.value)} placeholder="github.com/username/project" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Technologies (Comma separated)</Label>
+                      <Input value={project.technologies.join(', ')} onChange={(e) => updateProject(project.id, 'technologies', e.target.value.split(',').map(t => t.trim()))} placeholder="React, Next.js, Firebase" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea 
+                      placeholder="Briefly describe what you built and the impact it had."
+                      value={project.description}
+                      onChange={(e) => updateProject(project.id, 'description', e.target.value)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {(!data.projects || data.projects.length === 0) && (
+              <div className="text-center py-12 border-2 border-dashed rounded-3xl text-slate-400">
+                <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p>No projects added yet.</p>
+              </div>
+            )}
+          </div>
+        );
+      case 6: // Template selection
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div>
@@ -601,7 +607,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
               </div>
           </div>
         );
-      case 7:
+      case 7: // Review
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="text-center space-y-4">
@@ -630,7 +636,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
                       <Check className="h-4 w-4 text-emerald-500" /> Contact info is accurate
                     </li>
                     <li className="flex items-center gap-2 text-sm text-slate-600">
-                      <Check className="h-4 w-4 text-emerald-500" /> Experience is impact-focused
+                      <Check className="h-4 w-4 text-emerald-500" /> Education is up to date
                     </li>
                     <li className="flex items-center gap-2 text-sm text-slate-600">
                       <Check className="h-4 w-4 text-emerald-500" /> Template fits your industry

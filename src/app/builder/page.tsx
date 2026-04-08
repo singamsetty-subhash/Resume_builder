@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -5,7 +6,7 @@ import { BuilderForm } from '@/components/resume/BuilderForm';
 import { ResumePreview } from '@/components/resume/ResumePreview';
 import { ResumeData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Download, FileText, ArrowLeft, Monitor, Smartphone, Layout, Cloud, Check, Award, Briefcase } from 'lucide-react';
+import { Download, FileText, ArrowLeft, Monitor, Smartphone, Layout, Cloud, Check, Award, Briefcase, GraduationCap } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useAuth, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -21,21 +22,7 @@ const INITIAL_DATA: ResumeData = {
     website: '',
     linkedin: '',
   },
-  experience: [
-    {
-      id: '1',
-      jobTitle: 'Senior Software Engineer',
-      companyName: 'Tech Innovators Inc.',
-      location: 'San Francisco, CA',
-      startDate: 'Jan 2020',
-      endDate: 'Present',
-      current: true,
-      responsibilities: [
-        'Led a team of 10 developers to build a scalable microservices architecture.',
-        'Reduced deployment time by 40% using CI/CD pipelines and Kubernetes.',
-      ],
-    },
-  ],
+  experience: [],
   projects: [],
   education: [
     {
@@ -49,8 +36,6 @@ const INITIAL_DATA: ResumeData = {
   skills: [
     { id: '1', name: 'TypeScript', level: 'Expert' },
     { id: '2', name: 'React', level: 'Expert' },
-    { id: '3', name: 'Next.js', level: 'Expert' },
-    { id: '4', name: 'Node.js', level: 'Intermediate' },
   ],
   certifications: [],
   templateId: 'modern',
@@ -128,11 +113,11 @@ export default function BuilderPage() {
 
   const steps = [
     { name: 'Contact', icon: FileText },
-    { name: 'Experience', icon: Layout },
-    { name: 'Projects', icon: Briefcase },
-    { name: 'Education', icon: Layout },
-    { name: 'Certs', icon: Award },
+    { name: 'Education', icon: GraduationCap },
+    { name: 'Experience', icon: Briefcase },
     { name: 'Skills', icon: Layout },
+    { name: 'Certs', icon: Award },
+    { name: 'Projects', icon: Briefcase },
     { name: 'Template', icon: Layout },
     { name: 'Review', icon: Check },
   ];
