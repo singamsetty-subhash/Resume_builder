@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ResumeData, Experience, Education, Skill, Certification } from '@/lib/types';
+import { ResumeData, Experience, Education, Skill, Certification, Project } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, Sparkles, ChevronLeft, ChevronRight, Check, Search, X, Download, Cloud, Award } from 'lucide-react';
+import { Plus, Trash2, Sparkles, ChevronLeft, ChevronRight, Check, Search, X, Download, Cloud, Award, Briefcase } from 'lucide-react';
 import { generateAIBulletPoints } from '@/ai/flows/ai-bullet-point-generator-flow';
 import { useToast } from '@/hooks/use-toast';
 import { SKILL_CATEGORIES } from '@/lib/skills-data';
@@ -57,6 +57,28 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
     onChange({
       ...data,
       experience: data.experience.map(e => e.id === id ? { ...e, [field]: value } : e)
+    });
+  };
+
+  const addProject = () => {
+    const newProject: Project = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: '',
+      description: '',
+      technologies: [],
+      link: '',
+    };
+    onChange({ ...data, projects: [...(data.projects || []), newProject] });
+  };
+
+  const removeProject = (id: string) => {
+    onChange({ ...data, projects: data.projects.filter(p => p.id !== id) });
+  };
+
+  const updateProject = (id: string, field: keyof Project, value: any) => {
+    onChange({
+      ...data,
+      projects: data.projects.map(p => p.id === id ? { ...p, [field]: value } : p)
     });
   };
 
@@ -218,7 +240,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
                         disabled={aiLoading === exp.id}
                         onClick={() => handleAiImprove(exp)}
                       >
-                        <Sparkles className="h-3.5 w-3.5 text-accent" />
+                        <Briefcase className="h-3.5 w-3.5 text-accent" />
                         {aiLoading === exp.id ? 'Thinking...' : 'AI Improve'}
                       </Button>
                     </div>
@@ -235,6 +257,60 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
           </div>
         );
       case 2:
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">Personal Projects</h2>
+                <p className="text-muted-foreground text-sm">Showcase your side projects and creations.</p>
+              </div>
+              <Button onClick={addProject} size="sm" variant="outline">
+                <Plus className="mr-2 h-4 w-4" /> Add Project
+              </Button>
+            </div>
+            {data.projects?.map((project, idx) => (
+              <Card key={project.id}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-lg">Project #{idx + 1}</CardTitle>
+                  <Button variant="ghost" size="icon" onClick={() => removeProject(project.id)} className="text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2 col-span-2">
+                      <Label>Project Name</Label>
+                      <Input value={project.name} onChange={(e) => updateProject(project.id, 'name', e.target.value)} placeholder="Resume Builder AI" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Link (Optional)</Label>
+                      <Input value={project.link} onChange={(e) => updateProject(project.id, 'link', e.target.value)} placeholder="github.com/username/project" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Technologies (Comma separated)</Label>
+                      <Input value={project.technologies.join(', ')} onChange={(e) => updateProject(project.id, 'technologies', e.target.value.split(',').map(t => t.trim()))} placeholder="React, Next.js, Firebase" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Description</Label>
+                    <Textarea 
+                      placeholder="Briefly describe what you built and the impact it had."
+                      value={project.description}
+                      onChange={(e) => updateProject(project.id, 'description', e.target.value)}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {(!data.projects || data.projects.length === 0) && (
+              <div className="text-center py-12 border-2 border-dashed rounded-3xl text-slate-400">
+                <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p>No projects added yet.</p>
+              </div>
+            )}
+          </div>
+        );
+      case 3:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="flex justify-between items-center">
@@ -272,7 +348,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
             ))}
           </div>
         );
-      case 3:
+      case 4:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="flex justify-between items-center">
@@ -316,7 +392,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
             )}
           </div>
         );
-      case 4:
+      case 5:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center">
@@ -431,7 +507,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
             </div>
           </div>
         );
-      case 5:
+      case 6:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div>
@@ -461,7 +537,7 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
               </div>
           </div>
         );
-      case 6:
+      case 7:
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
              <div className="text-center space-y-4">
@@ -524,12 +600,12 @@ export function BuilderForm({ data, onChange, onNext, onPrev, step }: BuilderFor
           <ChevronLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         <div className="flex items-center gap-1">
-          {[0, 1, 2, 3, 4, 5, 6].map((s) => (
+          {[0, 1, 2, 3, 4, 5, 6, 7].map((s) => (
             <div key={s} className={`h-1.5 w-6 rounded-full transition-all ${s === step ? 'bg-primary w-10' : 'bg-slate-200'}`} />
           ))}
         </div>
         <Button onClick={onNext}>
-          {step === 6 ? 'Download PDF' : 'Continue'} <ChevronRight className="ml-2 h-4 w-4" />
+          {step === 7 ? 'Download PDF' : 'Continue'} <ChevronRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
     </div>

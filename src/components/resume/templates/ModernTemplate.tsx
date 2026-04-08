@@ -2,7 +2,7 @@ import React from 'react';
 import { ResumeTemplateProps } from '@/lib/types';
 
 export function ModernTemplate({ data }: ResumeTemplateProps) {
-  const { contact, experience, education, skills, certifications } = data;
+  const { contact, experience, education, skills, certifications, projects } = data;
 
   return (
     <div className="p-12 text-slate-800 h-full flex flex-col">
@@ -39,6 +39,28 @@ export function ModernTemplate({ data }: ResumeTemplateProps) {
               ))}
             </div>
           </section>
+
+          {projects && projects.length > 0 && (
+            <section>
+              <h2 className="text-xl font-bold text-primary border-b border-slate-200 mb-4 pb-1 uppercase tracking-wider">Projects</h2>
+              <div className="space-y-6">
+                {projects.map((project) => (
+                  <div key={project.id}>
+                    <div className="flex justify-between items-baseline">
+                      <h3 className="font-bold text-lg">{project.name}</h3>
+                      {project.link && <span className="text-xs text-primary underline">{project.link}</span>}
+                    </div>
+                    {project.technologies && project.technologies.length > 0 && (
+                      <div className="text-slate-500 text-xs font-medium mb-1">
+                        Technologies: {project.technologies.join(', ')}
+                      </div>
+                    )}
+                    <p className="text-sm text-slate-600 leading-relaxed">{project.description}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section>
             <h2 className="text-xl font-bold text-primary border-b border-slate-200 mb-4 pb-1 uppercase tracking-wider">Education</h2>

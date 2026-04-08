@@ -2,7 +2,7 @@ import React from 'react';
 import { ResumeTemplateProps } from '@/lib/types';
 
 export function MinimalTemplate({ data }: ResumeTemplateProps) {
-  const { contact, experience, education, skills, certifications } = data;
+  const { contact, experience, education, skills, certifications, projects } = data;
 
   return (
     <div className="p-16 text-slate-900 font-light tracking-wide">
@@ -38,6 +38,25 @@ export function MinimalTemplate({ data }: ResumeTemplateProps) {
           ))}
         </div>
       </section>
+
+      {projects && projects.length > 0 && (
+        <section className="mb-10">
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-accent mb-6">Projects</h2>
+          <div className="space-y-6">
+            {projects.map((project) => (
+              <div key={project.id} className="grid grid-cols-4 gap-4">
+                <div className="text-xs font-bold text-slate-400 mt-1 uppercase">Project</div>
+                <div className="col-span-3">
+                  <h3 className="font-bold text-lg leading-none mb-1">{project.name}</h3>
+                  <div className="text-sm font-medium text-slate-500 mb-2">{project.technologies.join(' • ')}</div>
+                  <p className="text-sm text-slate-600 leading-relaxed">{project.description}</p>
+                  {project.link && <div className="text-xs mt-2 text-accent font-bold uppercase tracking-wider">{project.link}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="grid grid-cols-2 gap-12">
         <section>

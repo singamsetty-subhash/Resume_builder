@@ -18,6 +18,14 @@ export type Experience = {
   responsibilities: string[];
 };
 
+export type Project = {
+  id: string;
+  name: string;
+  description: string;
+  technologies: string[];
+  link?: string;
+};
+
 export type Education = {
   id: string;
   degree: string;
@@ -43,6 +51,7 @@ export type Certification = {
 export type ResumeData = {
   contact: ContactInfo;
   experience: Experience[];
+  projects: Project[];
   education: Education[];
   skills: Skill[];
   certifications: Certification[];

@@ -2,7 +2,7 @@ import React from 'react';
 import { ResumeTemplateProps } from '@/lib/types';
 
 export function ClassicTemplate({ data }: ResumeTemplateProps) {
-  const { contact, experience, education, skills, certifications } = data;
+  const { contact, experience, education, skills, certifications, projects } = data;
 
   return (
     <div className="p-12 text-zinc-900 bg-white">
@@ -38,6 +38,26 @@ export function ClassicTemplate({ data }: ResumeTemplateProps) {
           ))}
         </div>
       </section>
+
+      {projects && projects.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-lg font-bold border-b border-zinc-800 mb-3 italic">Key Projects</h2>
+          <div className="space-y-4">
+            {projects.map((project) => (
+              <div key={project.id}>
+                <div className="flex justify-between items-baseline">
+                  <div className="font-bold text-sm uppercase tracking-wide">{project.name}</div>
+                  {project.link && <div className="text-xs italic text-zinc-500">{project.link}</div>}
+                </div>
+                <div className="text-xs text-zinc-600 italic mb-1">
+                  {project.technologies.join(', ')}
+                </div>
+                <p className="text-sm">{project.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="mb-6">
         <h2 className="text-lg font-bold border-b border-zinc-800 mb-3 italic">Education</h2>
